@@ -11,6 +11,7 @@ import android.util.Log;
 import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
+import android.webkit.WebViewClient;
 
 import com.pierfrancescosoffritti.androidyoutubeplayer.R;
 import com.pierfrancescosoffritti.androidyoutubeplayer.player.listeners.YouTubePlayerInitListener;
@@ -154,12 +155,22 @@ class WebViewYouTubePlayer extends WebView implements YouTubePlayer, YouTubePlay
     private void initWebView() {
         WebSettings settings = this.getSettings();
         settings.setJavaScriptEnabled(true);
-        settings.setCacheMode(WebSettings.LOAD_NO_CACHE);
+
+        //change cache mode to default
+        settings.setCacheMode(WebSettings.LOAD_DEFAULT);
         settings.setMediaPlaybackRequiresUserGesture(false);
 
-        this.addJavascriptInterface(new YouTubePlayerBridge(this), "YouTubePlayerBridge");
-        this.loadDataWithBaseURL("https://www.youtube.com", readYouTubePlayerHTMLFromFile(), "text/html", "utf-8", null);
+        //call these 2 extra methods
+        settings.setDomStorageEnabled(true);
+        settings.setPluginState(WebSettings.PluginState.ON);
 
+
+
+        this.addJavascriptInterface(new YouTubePlayerBridge(this), "YouTubePlayerBridge");
+
+        this.setWebViewClient(new WebViewClient());
+
+        //set webchrome client first, before loading the URL
         // if the video's thumbnail is not in memory, show a black screen
         this.setWebChromeClient(new WebChromeClient() {
             @Override
@@ -172,6 +183,9 @@ class WebViewYouTubePlayer extends WebView implements YouTubePlayer, YouTubePlay
                     return result;
             }
         });
+
+        this.loadDataWithBaseURL("https://www.youtube.com", readYouTubePlayerHTMLFromFile(), "text/html", "utf-8", null);
+
     }
 
     private String readYouTubePlayerHTMLFromFile() {
